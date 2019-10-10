@@ -4,9 +4,12 @@
 RunningMedian pm25s = RunningMedian(19);
 RunningMedian pm10s = RunningMedian(19);
 
-char* ssid = " ";         // 와이파이 이름
-char* password = " ";   // 와이파이 비밀번호
-String api_key = " ";   //APIKEY
+char* ssid = "";         // 와이파이 이름
+char* password = "";     // 와이파이 비밀번호
+String api_key = "";     //APIKEY
+#define PLAIVE_SERVER_ENABLE
+//#define THINGSPEAK_SERVER_ENABLE
+
 boolean wifi_ready;
 
 SoftwareSerial dust(D1, D0, false, 256);//RX,TX Communication
@@ -21,8 +24,18 @@ void got_dust(int pm25, int pm10) {//formula for dust sensor just use!!
 
 //서버에 보내기(send server)
 void do_interval() {               
-  if (wifi_ready)                                       //wifi is ok 
-    do_server(api_key,int(pm25s.getMedian()), int(pm10s.getMedian()),get_temperature());
+  if (wifi_ready){
+#ifdef PLAIVE_SERVER_ENABLE
+    do_server_plaive(api_key,int(pm25s.getMedian()), int(pm10s.getMedian()),get_temperature());
+#else
+  #ifdef THINGSPEAK_SERVER_ENABLE
+    do_server_thingspeak(api_key,int(pm25s.getMedian()), int(pm10s.getMedian()),get_temperature());
+  #else
+    do_server_default(api_key,int(pm25s.getMedian()), int(pm10s.getMedian()),get_temperature());
+  #endif
+#endif
+  } 
+                                        //wifi is ok 
 }
 
 unsigned long mark = 0;
